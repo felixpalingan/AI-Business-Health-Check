@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
   <style>
     :root {
       --bg-dark: #090d16;
@@ -315,6 +316,30 @@
       line-height: 1.5;
     }
 
+    /* Mermaid Container */
+    .mermaid-container {
+      width: 100%;
+      max-width: 1050px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mermaid-container .mermaid {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      background: transparent !important;
+    }
+
+    .mermaid-container svg {
+      max-width: 100% !important;
+      max-height: calc(100vh - 290px) !important;
+      height: auto !important;
+    }
+
     /* Speaker Notes Drawer */
     .speaker-notes-drawer {
       position: fixed;
@@ -611,12 +636,57 @@
       <p class="slide-subtitle">Strict air-gap separation between scoring math and AI narrative</p>
 
       <div class="slide-content" style="align-items: center; justify-content: center;">
-        <div style="width: 100%; max-width: 980px; display: flex; flex-direction: column; align-items: center;">
-          <img src="white_box_architecture.jpg" alt="The White-Box Architecture Blueprint" style="width: 100%; max-height: calc(100vh - 280px); object-fit: contain; border-radius: 14px; border: 1px solid rgba(59, 130, 246, 0.35); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 30px rgba(59, 130, 246, 0.15);">
-          <div style="margin-top: 14px; font-size: 13px; color: var(--text-dim); display: flex; gap: 24px; flex-wrap: wrap; justify-content: center;">
-            <span>🔒 <strong style="color: #60a5fa;">Deterministic Engine:</strong> 100% Math & Auditable Rules</span>
+        <div class="mermaid-container">
+          <pre class="mermaid">
+flowchart TD
+    subgraph Client ["Client / UI Layer (Rayyan Design)"]
+        UI["Multi-Step Assessment Form"]
+        Dash["Visual Results Dashboard"]
+        ChatUI["Interactive AI Chat Panel"]
+    end
+
+    subgraph Core ["Deterministic Scoring Engine (Zero AI)"]
+        Eng["Deterministic Calculator (Pure JS/TS)"]
+        RF["Rule-Based Red Flag Detector"]
+    end
+
+    subgraph Payload ["Structured Context Bridge"]
+        JSON[("Standardized Diagnostic Payload (JSON)<br/>• Profile &amp; PP 7/2021 Category<br/>• Dimension Scores (0-100)<br/>• Active Red Flags (P0, P1, P2)")]
+    end
+
+    subgraph AI ["Google Gemini 2.5 AI Layer"]
+        GenNarrative["30-Day Phased Action Plan Generator"]
+        ChatEngine["Context-Aware Business Advisor Chat"]
+    end
+
+    UI --> Eng
+    Eng --> RF
+    RF --> JSON
+    JSON --> Dash
+    JSON --> GenNarrative
+    JSON --> ChatEngine
+    GenNarrative --> Dash
+    ChatEngine --> ChatUI
+
+    style Client fill:#0c192e,stroke:#38bdf8,stroke-width:1.5px,color:#38bdf8
+    style Core fill:#06261f,stroke:#10b981,stroke-width:1.5px,color:#10b981
+    style Payload fill:#231709,stroke:#f59e0b,stroke-width:1.5px,color:#f59e0b
+    style AI fill:#1f0d2e,stroke:#c084fc,stroke-width:1.5px,color:#c084fc
+
+    classDef clientNode fill:#1e293b,stroke:#38bdf8,stroke-width:1.5px,color:#f8fafc;
+    classDef coreNode fill:#1e293b,stroke:#10b981,stroke-width:1.5px,color:#f8fafc;
+    classDef payloadNode fill:#1e293b,stroke:#f59e0b,stroke-width:1.5px,color:#f8fafc;
+    classDef aiNode fill:#1e293b,stroke:#c084fc,stroke-width:1.5px,color:#f8fafc;
+
+    class UI,Dash,ChatUI clientNode;
+    class Eng,RF coreNode;
+    class JSON payloadNode;
+    class GenNarrative,ChatEngine aiNode;
+          </pre>
+          <div style="margin-top: 10px; font-size: 13px; color: var(--text-dim); display: flex; gap: 24px; flex-wrap: wrap; justify-content: center;">
+            <span>🔒 <strong style="color: #60a5fa;">Deterministic Engine:</strong> 100% Math &amp; Auditable Rules</span>
             <span>⚡ <strong style="color: #38bdf8;">Bridge:</strong> Structured Context JSON Payload</span>
-            <span>🤖 <strong style="color: #34d399;">AI Layer:</strong> Narrative Synthesis & Interactive Chat Only</span>
+            <span>🤖 <strong style="color: #34d399;">AI Layer:</strong> Narrative Synthesis &amp; Interactive Chat Only</span>
           </div>
         </div>
       </div>
@@ -1015,6 +1085,13 @@
       const activeSlide = slides[currentSlide];
       const notes = activeSlide.getAttribute('data-notes') || 'No speaker notes for this slide.';
       notesText.textContent = notes;
+
+      // Ensure Mermaid renders when navigating to Slide 6
+      if (currentSlide === 5 && window.mermaid) {
+        setTimeout(() => {
+          mermaid.run({ querySelector: '.mermaid' }).catch(() => {});
+        }, 50);
+      }
     }
 
     function nextSlide() {
@@ -1046,6 +1123,32 @@
         toggleNotes();
       }
     });
+
+    // Mermaid setup
+    if (window.mermaid) {
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: 'dark',
+        themeVariables: {
+          darkMode: true,
+          background: '#090d16',
+          primaryColor: '#1e293b',
+          primaryTextColor: '#f8fafc',
+          primaryBorderColor: '#3b82f6',
+          lineColor: '#60a5fa',
+          secondaryColor: '#0f172a',
+          tertiaryColor: '#1e293b',
+          clusterBkg: 'rgba(15, 23, 42, 0.8)',
+          clusterBorder: 'rgba(59, 130, 246, 0.35)',
+          titleColor: '#38bdf8'
+        },
+        flowchart: {
+          useMaxWidth: true,
+          htmlLabels: true,
+          curve: 'basis'
+        }
+      });
+    }
 
     // Initialize
     updateSlide();
