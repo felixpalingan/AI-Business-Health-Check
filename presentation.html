@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Business Health Check — Methodology & Theoretical Foundation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #090d16;
+      --card-bg: rgba(18, 26, 43, 0.85);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent-blue: #3b82f6;
+      --accent-cyan: #06b6d4;
+      --accent-green: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-red: #ef4444;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background-image: 
+        radial-gradient(circle at 15% 20%, rgba(59, 130, 246, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 85% 80%, rgba(6, 182, 212, 0.08) 0%, transparent 40%);
+    }
+
+    /* Top Progress Bar */
+    .progress-container {
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 100;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
+      width: 0%;
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Header Nav */
+    header {
+      padding: 18px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--card-border);
+      background: rgba(9, 13, 22, 0.7);
+      backdrop-filter: blur(12px);
+      z-index: 50;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-badge {
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+      color: white;
+      font-weight: 800;
+      font-size: 14px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    .brand-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-main);
+      letter-spacing: -0.2px;
+    }
+
+    .nav-controls {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .slide-counter {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.04);
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--card-border);
+    }
+
+    .btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 7px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn.active {
+      background: rgba(59, 130, 246, 0.2);
+      border-color: var(--accent-blue);
+      color: #93c5fd;
+    }
+
+    /* Deck Viewport */
+    main.deck-viewport {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 40px;
+    }
+
+    .slide {
+      position: absolute;
+      width: 100%;
+      max-width: 1200px;
+      height: calc(100vh - 170px);
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 48px 56px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(12px) scale(0.99);
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow-y: auto;
+    }
+
+    .slide.active {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0) scale(1);
+    }
+
+    /* Slide Components */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+    }
+
+    .pill-blue { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .pill-green { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .pill-amber { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .pill-red { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+    .slide-title {
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1.2;
+      margin-bottom: 10px;
+    }
+
+    .slide-subtitle {
+      font-size: 16px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+
+    .slide-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* Grid & Cards */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 20px;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .card:hover {
+      border-color: rgba(255, 255, 255, 0.16);
+      transform: translateY(-2px);
+    }
+
+    .card-icon {
+      font-size: 28px;
+      margin-bottom: 12px;
+    }
+
+    .card-title {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .card-desc {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Modern Table */
+    table.slide-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+      margin: 12px 0;
+    }
+
+    table.slide-table th {
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-muted);
+      font-weight: 600;
+      text-align: left;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    table.slide-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: var(--text-main);
+      vertical-align: top;
+    }
+
+    table.slide-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    /* Highlight box */
+    .highlight-box {
+      background: rgba(59, 130, 246, 0.08);
+      border-left: 4px solid var(--accent-blue);
+      padding: 16px 20px;
+      border-radius: 0 10px 10px 0;
+      margin: 16px 0;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .code-box {
+      background: #020617;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: #38bdf8;
+      overflow-x: auto;
+      line-height: 1.5;
+    }
+
+    /* Speaker Notes Drawer */
+    .speaker-notes-drawer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: #0b1120;
+      border-top: 1px solid rgba(59, 130, 246, 0.3);
+      padding: 20px 40px;
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 90;
+      box-shadow: 0 -10px 25px rgba(0,0,0,0.5);
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
+    .speaker-notes-drawer.open {
+      transform: translateY(0);
+    }
+
+    .notes-header {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--accent-blue);
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .notes-text {
+      font-size: 14px;
+      color: #cbd5e1;
+      line-height: 1.6;
+    }
+
+    /* Footer */
+    footer {
+      padding: 12px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-dim);
+      border-top: 1px solid var(--card-border);
+      background: rgba(9, 13, 22, 0.7);
+    }
+
+    .keys-help {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .kbd {
+      background: rgba(255, 255, 255, 0.08);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-muted);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Progress -->
+  <div class="progress-container">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+
+  <!-- Header -->
+  <header>
+    <div class="brand">
+      <span class="logo-badge">UMKM AI</span>
+      <span class="brand-title">AI Business Health Check — Methodology Deck</span>
+    </div>
+    <div class="nav-controls">
+      <div class="slide-counter" id="slideCounter">1 / 15</div>
+      <button class="btn" id="prevBtn" onclick="prevSlide()">‹ Prev</button>
+      <button class="btn" id="nextBtn" onclick="nextSlide()">Next ›</button>
+      <button class="btn" id="notesToggleBtn" onclick="toggleNotes()">🗣️ Notes [N]</button>
+    </div>
+  </header>
+
+  <!-- Deck Viewport -->
+  <main class="deck-viewport">
+
+    <!-- SLIDE 1 -->
+    <div class="slide active" data-notes="Good morning Sriram and team. Today we present the redesigned methodology for the AI Business Health Check. Addressing the 'black box' critique from our August 31st meeting, this tool separates transparent mathematical scoring from AI narrative synthesis.">
+      <span class="pill pill-blue">METHODOLOGY & ARCHITECTURE</span>
+      <h1 class="slide-title" style="font-size: 46px; margin-top: 10px;">AI Business Health Check</h1>
+      <p class="slide-subtitle" style="font-size: 20px; color: #94a3b8;">Theory-Driven, White-Box Diagnostic Framework for Indonesian MSMEs</p>
+      
+      <div class="slide-content">
+        <div class="grid-2" style="margin-top: 20px;">
+          <div class="card" style="border-left: 4px solid var(--accent-blue);">
+            <div class="card-icon">🎯</div>
+            <div class="card-title">Solving the "Black Box" Problem</div>
+            <div class="card-desc">Moving away from unpredictable LLM guessing to auditable, deterministic calculations grounded in published business science.</div>
+          </div>
+          <div class="card" style="border-left: 4px solid var(--accent-cyan);">
+            <div class="card-icon">📚</div>
+            <div class="card-title">Academic & Legal Rigor</div>
+            <div class="card-desc">Built upon the Adapted Balanced Scorecard (Kaplan & Norton, 1996) and Indonesian Government Regulation (PP No. 7/2021).</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 30px; font-size: 13px; color: var(--text-dim); display: flex; gap: 30px;">
+          <span>👤 <strong>Presenter:</strong> Felix & Team</span>
+          <span>📅 <strong>Prepared for:</strong> Sriram & Stakeholders Review</span>
+          <span>🌐 <strong>Target:</strong> Micro & Small Enterprises (UMKM)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 2 -->
+    <div class="slide" data-notes="Why was the black box approach wrong? If an MSME owner or loan consultant sees an arbitrary score generated by an LLM prompt, it cannot be audited or trusted. Consistency and transparency are mandatory.">
+      <span class="pill pill-red">CRITIQUE & RESOLUTION</span>
+      <h2 class="slide-title">Why Generic "Black Box" AI Fails MSMEs</h2>
+      <p class="slide-subtitle">Addressing the core feedback from the August 31st stakeholder meeting</p>
+
+      <div class="slide-content">
+        <table class="slide-table">
+          <thead>
+            <tr>
+              <th>Dimension</th>
+              <th>❌ Generic "Black Box" AI Tool</th>
+              <th>✅ Our White-Box Diagnostic Framework</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Scoring Logic</strong></td>
+              <td>LLM guesses a number (e.g. "65/100") based on freeform prompt</td>
+              <td><strong style="color: #34d399;">100% Deterministic mathematical formula</strong> (Pure JS/TS engine)</td>
+            </tr>
+            <tr>
+              <td><strong>Consistency</strong></td>
+              <td>Non-deterministic; varying prompts produce varying scores</td>
+              <td><strong style="color: #34d399;">100% Reproducible</strong>; identical inputs yield identical outputs</td>
+            </tr>
+            <tr>
+              <td><strong>Auditability</strong></td>
+              <td>Cannot explain <em>why</em> a score is 60 instead of 75</td>
+              <td><strong style="color: #34d399;">Full transparency</strong>: sub-indicators and formulas are public</td>
+            </tr>
+            <tr>
+              <td><strong>Academic Foundation</strong></td>
+              <td>Unsubstantiated text completion</td>
+              <td><strong style="color: #34d399;">Adapted Balanced Scorecard</strong> (Kaplan & Norton, 1996)</td>
+            </tr>
+            <tr>
+              <td><strong>Regulatory Basis</strong></td>
+              <td>Generic Western business cliches</td>
+              <td><strong style="color: #34d399;">PP No. 7/2021, SAK EMKM</strong>, and OSS-RBA licensing</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SLIDE 3 -->
+    <div class="slide" data-notes="Why Balanced Scorecard? Financial metrics are lagging indicators. By the time the cash is gone, it's too late. BSC connects internal process hygiene and market structure to financial results.">
+      <span class="pill pill-blue">THEORETICAL FOUNDATION</span>
+      <h2 class="slide-title">Why Adapted Balanced Scorecard (Kaplan & Norton)?</h2>
+      <p class="slide-subtitle">Connecting leading operational drivers to lagging financial outcomes</p>
+
+      <div class="slide-content">
+        <div class="grid-4">
+          <div class="card">
+            <div class="card-icon">💰</div>
+            <div class="card-title">1. Financial Health (35%)</div>
+            <div class="card-desc">Account segregation, cash runway, record-keeping method, and gross margin health.</div>
+          </div>
+          <div class="card">
+            <div class="card-icon">⚙️</div>
+            <div class="card-title">2. Operations (25%)</div>
+            <div class="card-desc">SOP documentation, key-person/owner dependency index, and inventory/waste control.</div>
+          </div>
+          <div class="card">
+            <div class="card-icon">📊</div>
+            <div class="card-title">3. Market & Client (20%)</div>
+            <div class="card-desc">Revenue concentration risk, channel diversification, and repeat customer tracking.</div>
+          </div>
+          <div class="card">
+            <div class="card-icon">🏛️</div>
+            <div class="card-title">4. Governance (20%)</div>
+            <div class="card-desc">Formal legal licensing (NIB/OSS), HR clarity, and performance-based incentive structures.</div>
+          </div>
+        </div>
+
+        <div class="highlight-box">
+          <strong>Academic Justification:</strong> Validated by a <em>Systematic Literature Review (SLR 2022–2026)</em> confirming BSC's efficacy as a feedforward management control system for small and medium enterprises.
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4 -->
+    <div class="slide" data-notes="BCG matrix was suggested earlier, but it is fundamentally unsuited for MSMEs. Calculating relative market share requires total industry market data that doesn't exist for small warungs or coffee shops.">
+      <span class="pill pill-amber">FRAMEWORK COMPARISON</span>
+      <h2 class="slide-title">Why NOT the BCG Matrix?</h2>
+      <p class="slide-subtitle">Rigorous comparative analysis of popular strategic frameworks</p>
+
+      <div class="slide-content">
+        <table class="slide-table">
+          <thead>
+            <tr>
+              <th>Framework</th>
+              <th>Core Analytical Focus</th>
+              <th>MSME Applicability</th>
+              <th>Verdict & Rationale</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>BCG Growth-Share Matrix</strong></td>
+              <td>Multi-product portfolio share vs. industry market growth</td>
+              <td>❌ <span style="color: #f87171;">Very Poor</span></td>
+              <td><strong>Eliminated</strong>. MSMEs sell 1-3 products and have zero market share data.</td>
+            </tr>
+            <tr>
+              <td><strong>McKinsey 7S</strong></td>
+              <td>Organizational alignment (Strategy, Structure, Shared Values)</td>
+              <td>⚠️ <span style="color: #fbbf24;">Moderate</span></td>
+              <td>Secondary. Highly qualitative, lacks numerical financial/cash runway benchmarks.</td>
+            </tr>
+            <tr>
+              <td><strong>Weisbord 6-Box</strong></td>
+              <td>Organizational diagnosis (Purposes, Relationships, Rewards)</td>
+              <td>⚠️ <span style="color: #fbbf24;">Moderate</span></td>
+              <td>Secondary. Excellent for team sociology, but ignores commercial liquidity mechanics.</td>
+            </tr>
+            <tr>
+              <td><strong>Adapted Balanced Scorecard</strong></td>
+              <td>Multi-dimensional balance across Finance, Ops, Market & People</td>
+              <td>✅ <span style="color: #34d399;">Very High</span></td>
+              <td><strong>Adopted</strong>. Quantifiable, verifiable, comprehensive operational view.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SLIDE 5 -->
+    <div class="slide" data-notes="We align strictly with Indonesian Law (PP No. 7/2021). A 'small business' in US literature might be $5M, which is huge in Indonesia. We calibrate thresholds to real Indonesian economic realities.">
+      <span class="pill pill-green">REGULATORY FOUNDATION</span>
+      <h2 class="slide-title">Indonesian Regulatory Grounding (PP No. 7/2021)</h2>
+      <p class="slide-subtitle">Calibrated to legal MSME definitions and local banking standards</p>
+
+      <div class="slide-content">
+        <div class="grid-3" style="margin-bottom: 20px;">
+          <div class="card" style="border-top: 3px solid #38bdf8;">
+            <div class="pill pill-blue">US-1 (MIKRO)</div>
+            <div class="card-title">Usaha Mikro</div>
+            <div class="card-desc">
+              • <strong>Modal:</strong> ≤ Rp 1 Miliar<br>
+              • <strong>Omzet:</strong> ≤ Rp 2 Miliar/thn<br>
+              • Focus: Survival, basic bookkeeping, separated accounts.
+            </div>
+          </div>
+          <div class="card" style="border-top: 3px solid #34d399;">
+            <div class="pill pill-green">US-2 (KECIL)</div>
+            <div class="card-title">Usaha Kecil</div>
+            <div class="card-desc">
+              • <strong>Modal:</strong> > Rp 1 M — Rp 5 Miliar<br>
+              • <strong>Omzet:</strong> > Rp 2 M — Rp 15 Miliar/thn<br>
+              • Focus: Delegation, SOP, NIB, multi-channel.
+            </div>
+          </div>
+          <div class="card" style="border-top: 3px solid #94a3b8;">
+            <div class="pill">US-3 (MENENGAH)</div>
+            <div class="card-title">Usaha Menengah</div>
+            <div class="card-desc">
+              • <strong>Modal:</strong> > Rp 5 M — Rp 10 Miliar<br>
+              • <strong>Omzet:</strong> > Rp 15 M — Rp 50 Miliar/thn<br>
+              • Focus: ERP, governance, formal audit.
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <strong style="color: #60a5fa;">Scope for Release v1:</strong> Focus exclusively on <strong>Usaha Mikro & Kecil</strong> in high-density sectors (F&B Kuliner, Retail Dagang, Personal Services) aligning with <strong>SAK EMKM</strong> financial standards.
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 6 -->
+    <div class="slide" data-notes="This diagram shows our white-box architecture. Notice the air gap: user inputs feed into the deterministic engine. Only calculated JSON metrics are passed to Gemini for narrative generation and chat.">
+      <span class="pill pill-blue">SYSTEM ARCHITECTURE</span>
+      <h2 class="slide-title">The White-Box Architecture Blueprint</h2>
+      <p class="slide-subtitle">Strict air-gap separation between scoring math and AI narrative</p>
+
+      <div class="slide-content">
+        <div class="code-box">
+[ User Assessment Input Form ]
+              │
+              ▼
+[ Deterministic Scoring Engine ] ──> Hard-coded Formulas (100% auditable)
+              │
+              ▼
+[ Structured Context Payload ]   ──> Scores (0-100), Sub-scores, Red Flags (JSON)
+              │
+      ┌───────┴──────────────────────────────┐
+      ▼                                      ▼
+[ Results Dashboard ]            [ Google Gemini AI Layer ]
+- 4-Pillar Score Cards           1. 30-Day Phased Action Plan Generator
+- Radar Chart Visualization      2. Context-Aware Interactive AI Chat Advisor
+- Red Flag Alerts                - Answers follow-ups with full business context
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 7 -->
+    <div class="slide" data-notes="The composite formula allocates 35% to finance, 25% to ops, 20% to market, and 20% to governance. Scores range from 0 to 100 with clear qualitative status bands.">
+      <span class="pill pill-blue">SCORING ENGINE</span>
+      <h2 class="slide-title">Composite Scoring Formula & Tiers</h2>
+      <p class="slide-subtitle">Mathematical formula producing an intuitive 0–100 index</p>
+
+      <div class="slide-content">
+        <div class="code-box" style="font-size: 16px; text-align: center; margin-bottom: 24px;">
+          Total Score = (S_fin × 0.35) + (S_ops × 0.25) + (S_mkt × 0.20) + (S_gov × 0.20)
+        </div>
+
+        <div class="grid-4">
+          <div class="card" style="border-top: 4px solid var(--accent-green);">
+            <span class="pill pill-green">80 – 100</span>
+            <div class="card-title">🟢 Healthy</div>
+            <div class="card-desc">Strong fundamentals, bankable, ready for expansion and formal credit facilities.</div>
+          </div>
+          <div class="card" style="border-top: 4px solid #facc15;">
+            <span class="pill pill-amber">60 – 79</span>
+            <div class="card-title">🟡 Fairly Healthy</div>
+            <div class="card-desc">Stable day-to-day operations, but specific structural gaps require remediation.</div>
+          </div>
+          <div class="card" style="border-top: 4px solid var(--accent-amber);">
+            <span class="pill pill-amber">40 – 59</span>
+            <div class="card-title">🟠 Needs Attention</div>
+            <div class="card-desc">Significant vulnerabilities present; vulnerable to sudden operational or cash shocks.</div>
+          </div>
+          <div class="card" style="border-top: 4px solid var(--accent-red);">
+            <span class="pill pill-red">0 – 39</span>
+            <div class="card-title">🔴 Critical</div>
+            <div class="card-desc">High distress risk; urgent intervention required to prevent insolvency.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 8 -->
+    <div class="slide" data-notes="Financial health is 35% because cash is oxygen. Operations is 25% to measure key-person risk and standard operating procedures. Notice Owner Dependency triggers P1 red flag if under 2 days.">
+      <span class="pill pill-blue">DEEP DIVE: PILLARS 1 & 2</span>
+      <h2 class="slide-title">Financial Health & Operations Dimensions</h2>
+      <p class="slide-subtitle">Granular indicator breakdowns, weights, and scoring rules</p>
+
+      <div class="slide-content">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title" style="color: #60a5fa;">💰 Financial Health (35% Weight)</div>
+            <table class="slide-table" style="font-size: 12.5px;">
+              <tr>
+                <td><strong>Account Separation</strong> (25%)</td>
+                <td>Separated = 100 · Mixed = 0 (🚨 <strong>P0 Flag</strong>)</td>
+              </tr>
+              <tr>
+                <td><strong>Record-Keeping</strong> (25%)</td>
+                <td>App/ERP = 100 · Spreadsheet = 75 · Manual = 40 · None = 0</td>
+              </tr>
+              <tr>
+                <td><strong>Cash Runway</strong> (30%)</td>
+                <td>≥3 mo = 100 · 1-2.9 mo = 60 · &lt;1 mo = 20 (🚨 <strong>P0 Flag</strong>)</td>
+              </tr>
+              <tr>
+                <td><strong>Gross Margin</strong> (20%)</td>
+                <td>Healthy per benchmark = 100 · Unknown/Thin = 20</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="card">
+            <div class="card-title" style="color: #34d399;">⚙️ Operations & Efficiency (25% Weight)</div>
+            <table class="slide-table" style="font-size: 12.5px;">
+              <tr>
+                <td><strong>SOP Documentation</strong> (35%)</td>
+                <td>Written & active = 100 · Partial = 50 · None = 10</td>
+              </tr>
+              <tr>
+                <td><strong>Owner Dependency</strong> (35%)</td>
+                <td>Can leave ≥1 mo = 100 · 1 wk = 50 · ≤2 days = 0 (🚨 <strong>P1 Flag</strong>)</td>
+              </tr>
+              <tr>
+                <td><strong>Inventory/Waste</strong> (30%)</td>
+                <td>Stock opname = 100 · Receipts only = 40 · None = 0</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 9 -->
+    <div class="slide" data-notes="Market dimension penalizes high customer concentration where losing one client breaks the business. Governance enforces NIB (Nomor Induk Berusaha) which is mandatory for government KUR loans and legal protection.">
+      <span class="pill pill-blue">DEEP DIVE: PILLARS 3 & 4</span>
+      <h2 class="slide-title">Market & Governance Dimensions</h2>
+      <p class="slide-subtitle">Protecting against customer vulnerability and legal non-compliance</p>
+
+      <div class="slide-content">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title" style="color: #fbbf24;">📊 Market & Customer (20% Weight)</div>
+            <table class="slide-table" style="font-size: 12.5px;">
+              <tr>
+                <td><strong>Revenue Concentration</strong> (50%)</td>
+                <td>No single client &gt;40% = 100 · Single client ≥50% = 30</td>
+              </tr>
+              <tr>
+                <td><strong>Sales Channels</strong> (25%)</td>
+                <td>Multi-channel (Online + Offline) = 100 · Single channel = 50</td>
+              </tr>
+              <tr>
+                <td><strong>Repeat Order Tracking</strong> (25%)</td>
+                <td>Actively recorded & measured = 100 · Untracked = 40</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="card">
+            <div class="card-title" style="color: #c084fc;">🏛️ Governance & Human Capital (20% Weight)</div>
+            <table class="slide-table" style="font-size: 12.5px;">
+              <tr>
+                <td><strong>Business Licensing</strong> (50%)</td>
+                <td>NIB + Sectoral Permit = 100 · NIB only = 60 · None = 10 (🚨 <strong>P2 Flag</strong>)</td>
+              </tr>
+              <tr>
+                <td><strong>HR & Incentives</strong> (50%)</td>
+                <td>Defined roles + performance bonus = 100 · Basic wage only = 50</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 10 -->
+    <div class="slide" data-notes="Red flags are boolean circuit breakers. Regardless of the composite score, if cash runway is under 30 days or accounts are mixed, a P0 alarm is triggered.">
+      <span class="pill pill-red">SAFETY SYSTEM</span>
+      <h2 class="slide-title">Deterministic Red Flag Circuit Breakers</h2>
+      <p class="slide-subtitle">Rule-based emergency triggers executed before AI narrative generation</p>
+
+      <div class="slide-content">
+        <div class="grid-3">
+          <div class="card" style="border: 1px solid rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.05);">
+            <div class="pill pill-red">PRIORITY 0 (CRITICAL)</div>
+            <div class="card-title" style="color: #f87171;">🔴 Liquidity Danger</div>
+            <div class="card-desc">
+              <strong>Trigger:</strong> Mixed accounts == TRUE <em>OR</em> Cash Runway &lt; 1 month.<br><br>
+              <strong>Impact:</strong> High imminent risk of operational default or bankruptcy. Must be tackled in Week 1.
+            </div>
+          </div>
+
+          <div class="card" style="border: 1px solid rgba(245, 158, 11, 0.4); background: rgba(245, 158, 11, 0.05);">
+            <div class="pill pill-amber">PRIORITY 1 (BOTTLENECK)</div>
+            <div class="card-title" style="color: #fbbf24;">🟠 Operational Bottleneck</div>
+            <div class="card-desc">
+              <strong>Trigger:</strong> Owner dependency ≤ 2 working days.<br><br>
+              <strong>Impact:</strong> Founder burnout; zero enterprise valuation; inability to scale beyond founder hours.
+            </div>
+          </div>
+
+          <div class="card" style="border: 1px solid rgba(59, 130, 246, 0.4); background: rgba(59, 130, 246, 0.05);">
+            <div class="pill pill-blue">PRIORITY 2 (COMPLIANCE)</div>
+            <div class="card-title" style="color: #60a5fa;">🟡 Regulatory Exposure</div>
+            <div class="card-desc">
+              <strong>Trigger:</strong> Operating &gt; 1 year without NIB.<br><br>
+              <strong>Impact:</strong> Barred from bank KUR loans, government procurement, and legal protection under PP 7/2021.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 11 -->
+    <div class="slide" data-notes="We enforce clear guardrails. AI does not calculate scores, determine red flags, or make up metrics. It provides qualitative translation and customized 30-day action plans.">
+      <span class="pill pill-green">AI GOVERNANCE</span>
+      <h2 class="slide-title">Transparent Boundaries of the AI Layer</h2>
+      <p class="slide-subtitle">Clear demarcation of what the AI does versus what is strictly prohibited</p>
+
+      <div class="slide-content">
+        <table class="slide-table">
+          <thead>
+            <tr>
+              <th style="color: #34d399;">✅ The AI DOES (Value-Add Synthesis)</th>
+              <th style="color: #f87171;">❌ The AI DOES NOT (Strictly Prohibited)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Synthesizes contextual explanations tailored to the user's specific sector (F&B, Retail, Services)</td>
+              <td><strong>Does NOT calculate or modify scores</strong>; all formulas are hardcoded</td>
+            </tr>
+            <tr>
+              <td>Generates structured <strong>30-Day Action Plans</strong> phased over Week 1 to Week 4</td>
+              <td><strong>Does NOT trigger red flags</strong>; triggers are deterministic boolean rules</td>
+            </tr>
+            <tr>
+              <td>Maps findings to Indonesian standards (OSS-RBA, SAK EMKM, local KUR programs)</td>
+              <td><strong>Does NOT reclassify enterprise scale</strong>; strictly follows PP 7/2021 thresholds</td>
+            </tr>
+            <tr>
+              <td>Powers the <strong>Interactive Chat Advisor</strong> with full context injected</td>
+              <td><strong>Does NOT hallucinate financial data</strong>; constrained to diagnostic payload</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SLIDE 12 -->
+    <div class="slide" data-notes="Static reports are boring. The interactive chat advisor allows the MSME owner to follow up on recommendations. Because the AI has full context of the assessment, it gives highly practical, grounded advice.">
+      <span class="pill pill-blue">FEATURE HIGHLIGHT</span>
+      <h2 class="slide-title">Context-Aware Interactive AI Chat Advisor</h2>
+      <p class="slide-subtitle">Dynamic conversational consultation grounded in calculated diagnostic facts</p>
+
+      <div class="slide-content">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">Injected Diagnostic Context</div>
+            <ul style="font-size: 13px; color: var(--text-muted); line-height: 1.8; margin-left: 18px;">
+              <li>Business Name, Industry Sector, and Years in Operation</li>
+              <li>Official Scale Tier under PP No. 7/2021 (Mikro vs. Kecil)</li>
+              <li>Calculated Scores: Overall + 4 Dimension Breakdown</li>
+              <li>Active Red Flag Alerts (P0, P1, P2)</li>
+              <li>Generated 30-Day Priority Action Items</li>
+            </ul>
+          </div>
+
+          <div class="card" style="background: #020617; border: 1px solid rgba(59, 130, 246, 0.3);">
+            <div class="pill pill-blue">LIVE CONSULTATION DEMO</div>
+            <div style="font-size: 12.5px; color: #94a3b8; margin-bottom: 8px;">
+              <strong style="color: #f8fafc;">User:</strong> "Gimana cara paling gampang pisahin rekening buat kedai kopi saya?"
+            </div>
+            <div style="font-size: 12.5px; color: #38bdf8; line-height: 1.5;">
+              <strong>AI Advisor:</strong> "Berdasarkan diagnosa, skor keuangan kamu 35 (ada P0 Red Flag). Langkah minggu ini:<br>
+              1. Buka sub-rekening digital (BCA Bisnis/Jago) khusus penerimaan QRIS.<br>
+              2. Buat gaji tetap mingguan buat kamu sendiri, jangan tarik tunai dari kasir."
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 13 -->
+    <div class="slide" data-notes="Team alignment: Rayyan owns UI/UX mockups and design system. Felix and the dev team own the scoring logic, Gemini AI integration, Vercel CI/CD, and full-stack implementation.">
+      <span class="pill pill-amber">COLLABORATION</span>
+      <h2 class="slide-title">Team Roles & Ownership Matrix</h2>
+      <p class="slide-subtitle">Clear division of responsibilities to ensure rapid execution and quality</p>
+
+      <div class="slide-content">
+        <div class="grid-2">
+          <div class="card" style="border-top: 4px solid var(--accent-cyan);">
+            <div class="card-title" style="font-size: 20px;">🎨 Rayyan — UI/UX Design Owner</div>
+            <div class="card-desc" style="margin-top: 10px;">
+              • High-fidelity UI/UX design mockups (Figma/Web)<br>
+              • Visual design system: color palette, typography tokens, layout grid<br>
+              • Form user journey & interactive dashboard mockups<br>
+              • Design handoff specs for engineering implementation
+            </div>
+          </div>
+
+          <div class="card" style="border-top: 4px solid var(--accent-blue);">
+            <div class="card-title" style="font-size: 20px;">💻 Felix & AI Pair — Dev & Architecture</div>
+            <div class="card-desc" style="margin-top: 10px;">
+              • Methodology formulation & mathematical scoring engine<br>
+              • Rule-based red flags checker & automated unit test suite<br>
+              • Google Gemini API integration & AI Chat Advisor pipeline<br>
+              • Next.js frontend code, Vercel CI/CD, and Notion sync
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 14 -->
+    <div class="slide" data-notes="We are using Early Vercel Deployment so every push to GitHub main can be immediately tested by Sriram and Rayyan on a live URL. Phase 0 is complete; next is Phase 1 Vercel setup.">
+      <span class="pill pill-green">EXECUTION ROADMAP</span>
+      <h2 class="slide-title">Engineering Roadmap & CI/CD Strategy</h2>
+      <p class="slide-subtitle">Early Vercel CI/CD pipeline linked to GitHub for continuous testing</p>
+
+      <div class="slide-content">
+        <div class="grid-3" style="margin-bottom: 16px;">
+          <div class="card" style="border-left: 3px solid #10b981;">
+            <div class="pill pill-green">PHASE 0 [DONE]</div>
+            <div class="card-title">Theory & Documentation</div>
+            <div class="card-desc">Methodology synced to GitHub README and Notion Database. White-box principles locked.</div>
+          </div>
+
+          <div class="card" style="border-left: 3px solid #3b82f6;">
+            <div class="pill pill-blue">PHASE 1 [NEXT]</div>
+            <div class="card-title">Early Vercel CI/CD</div>
+            <div class="card-desc">Link repository to Vercel. Continuous preview deploy on every push to main branch.</div>
+          </div>
+
+          <div class="card" style="border-left: 3px solid #8b5cf6;">
+            <div class="pill pill-blue">PHASE 2</div>
+            <div class="card-title">Scoring Engine & Tests</div>
+            <div class="card-desc">Implement pure JS/TS formulas, red flag triggers, and 100% test coverage suite.</div>
+          </div>
+        </div>
+
+        <div class="grid-3">
+          <div class="card" style="border-left: 3px solid #f59e0b;">
+            <div class="pill pill-amber">PHASE 3</div>
+            <div class="card-title">UI & Form Assembly</div>
+            <div class="card-desc">Integrate Rayyan's UI mockups into progressive multi-step assessment form.</div>
+          </div>
+
+          <div class="card" style="border-left: 3px solid #ec4899;">
+            <div class="pill pill-amber">PHASE 4 & 5</div>
+            <div class="card-title">Gemini AI & Chat</div>
+            <div class="card-desc">30-day action plan generation and interactive context-aware AI chat advisor.</div>
+          </div>
+
+          <div class="card" style="border-left: 3px solid #06b6d4;">
+            <div class="pill pill-green">PHASE 6</div>
+            <div class="card-title">Localization & Review</div>
+            <div class="card-desc">Bilingual support (English first + Indonesian toggle) and internal dogfooding.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 15 -->
+    <div class="slide" data-notes="Thank you Sriram and team. We are ready to answer your questions and proceed to Phase 1 Vercel setup.">
+      <span class="pill pill-green">SUMMARY</span>
+      <h2 class="slide-title">Conclusion & Key Takeaways</h2>
+      <p class="slide-subtitle">Ready for stakeholder alignment and execution</p>
+
+      <div class="slide-content">
+        <div class="grid-2" style="margin-bottom: 24px;">
+          <div class="card" style="border-left: 4px solid #10b981;">
+            <div class="card-title">1. Fully Transparent (White Box)</div>
+            <div class="card-desc">Zero black box scoring. Formulas are public, auditable, and academically grounded in the Balanced Scorecard.</div>
+          </div>
+          <div class="card" style="border-left: 4px solid #3b82f6;">
+            <div class="card-title">2. Indonesian Legal Grounding</div>
+            <div class="card-desc">Calibrated to PP No. 7/2021 (Mikro & Kecil thresholds), SAK EMKM, and mandatory NIB licensing.</div>
+          </div>
+          <div class="card" style="border-left: 4px solid #f59e0b;">
+            <div class="card-title">3. Safety-First Red Flags</div>
+            <div class="card-desc">P0, P1, and P2 circuit breakers catch liquidity, operational, and legal hazards before AI narrative generation.</div>
+          </div>
+          <div class="card" style="border-left: 4px solid #8b5cf6;">
+            <div class="card-title">4. Actionable & Dynamic</div>
+            <div class="card-desc">Combines 30-Day Action Plans with an Interactive AI Chat Advisor with full injected context.</div>
+          </div>
+        </div>
+
+        <div class="highlight-box" style="text-align: center; border-left: none; border-radius: 12px; background: rgba(255, 255, 255, 0.04);">
+          <span style="font-size: 18px; font-weight: 700; color: #f8fafc;">Open for Discussion with Sriram & Technical Team</span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Speaker Notes Drawer -->
+  <div class="speaker-notes-drawer" id="notesDrawer">
+    <div class="notes-header">
+      <span>🗣️ Speaker Notes (Presenter View)</span>
+      <span style="cursor: pointer;" onclick="toggleNotes()">✕ Close</span>
+    </div>
+    <div class="notes-text" id="notesText"></div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="keys-help">
+      <span>Navigation: <span class="kbd">←</span> <span class="kbd">→</span> or <span class="kbd">Space</span></span>
+      <span>Toggle Notes: <span class="kbd">N</span></span>
+    </div>
+    <div>AI Business Health Check • Internal Confidential</div>
+  </footer>
+
+  <script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    const progressBar = document.getElementById('progressBar');
+    const slideCounter = document.getElementById('slideCounter');
+    const notesDrawer = document.getElementById('notesDrawer');
+    const notesText = document.getElementById('notesText');
+    const notesToggleBtn = document.getElementById('notesToggleBtn');
+
+    function updateSlide() {
+      slides.forEach((s, idx) => {
+        s.classList.toggle('active', idx === currentSlide);
+      });
+
+      const progress = ((currentSlide + 1) / totalSlides) * 100;
+      progressBar.style.width = `${progress}%`;
+      slideCounter.textContent = `${currentSlide + 1} / ${totalSlides}`;
+
+      // Update speaker notes
+      const activeSlide = slides[currentSlide];
+      const notes = activeSlide.getAttribute('data-notes') || 'No speaker notes for this slide.';
+      notesText.textContent = notes;
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides - 1) {
+        currentSlide++;
+        updateSlide();
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 0) {
+        currentSlide--;
+        updateSlide();
+      }
+    }
+
+    function toggleNotes() {
+      notesDrawer.classList.toggle('open');
+      notesToggleBtn.classList.toggle('active');
+    }
+
+    // Keyboard controls
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        prevSlide();
+      } else if (e.key === 'n' || e.key === 'N') {
+        toggleNotes();
+      }
+    });
+
+    // Initialize
+    updateSlide();
+  </script>
+</body>
+</html>
