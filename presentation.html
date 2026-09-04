@@ -610,22 +610,14 @@
       <h2 class="slide-title">The White-Box Architecture Blueprint</h2>
       <p class="slide-subtitle">Strict air-gap separation between scoring math and AI narrative</p>
 
-      <div class="slide-content">
-        <div class="code-box">
-[ User Assessment Input Form ]
-              │
-              ▼
-[ Deterministic Scoring Engine ] ──> Hard-coded Formulas (100% auditable)
-              │
-              ▼
-[ Structured Context Payload ]   ──> Scores (0-100), Sub-scores, Red Flags (JSON)
-              │
-      ┌───────┴──────────────────────────────┐
-      ▼                                      ▼
-[ Results Dashboard ]            [ Google Gemini AI Layer ]
-- 4-Pillar Score Cards           1. 30-Day Phased Action Plan Generator
-- Radar Chart Visualization      2. Context-Aware Interactive AI Chat Advisor
-- Red Flag Alerts                - Answers follow-ups with full business context
+      <div class="slide-content" style="align-items: center; justify-content: center;">
+        <div style="width: 100%; max-width: 980px; display: flex; flex-direction: column; align-items: center;">
+          <img src="white_box_architecture.jpg" alt="The White-Box Architecture Blueprint" style="width: 100%; max-height: calc(100vh - 280px); object-fit: contain; border-radius: 14px; border: 1px solid rgba(59, 130, 246, 0.35); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 30px rgba(59, 130, 246, 0.15);">
+          <div style="margin-top: 14px; font-size: 13px; color: var(--text-dim); display: flex; gap: 24px; flex-wrap: wrap; justify-content: center;">
+            <span>🔒 <strong style="color: #60a5fa;">Deterministic Engine:</strong> 100% Math & Auditable Rules</span>
+            <span>⚡ <strong style="color: #38bdf8;">Bridge:</strong> Structured Context JSON Payload</span>
+            <span>🤖 <strong style="color: #34d399;">AI Layer:</strong> Narrative Synthesis & Interactive Chat Only</span>
+          </div>
         </div>
       </div>
     </div>

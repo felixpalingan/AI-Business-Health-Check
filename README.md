@@ -14,36 +14,7 @@ This tool helps business consultants and MSME owners:
 
 This tool **strictly separates deterministic scoring from AI narrative generation & conversation**:
 
-```
-                  ┌──────────────────────┐
-                  │   User Input Form    │
-                  └──────────┬───────────┘
-                             │
-                             ▼
-              ┌──────────────────────────────┐
-              │ Deterministic Scoring Engine │ ──> Hard-coded formulas (100% transparent)
-              └──────────────┬───────────────┘
-                             │
-                             ▼
-              ┌──────────────────────────────┐
-              │  Structured Context Payload  │ ──> Profile, 4-pillar scores, red flags (JSON)
-              └───────┬──────────────┬───────┘
-                      │              │
-           ┌──────────┴───┐      ┌───┴──────────────────────────────┐
-           ▼              │      ▼                                  ▼
-┌──────────────────────┐  │  ┌────────────────────────────────────────────────────────┐
-│ Results Dashboard    │  │  │ Context-Aware Interactive AI Chat Advisor                 │
-│ (Scores, Radar Chart,│  │  │ (Gemini 2.5 API + Injected Assessment Context)             │
-│ 30-Day Action Plan)  │  │  │ - Follow-up questions ("How do I separate accounts?")    │
-└──────────────────────┘  │  │ - Industry-specific coaching (F&B, Retail, Services)      │
-                          │  │ - Step-by-step implementation guidance                   │
-                          │  └────────────────────────────────────────────────────────┘
-                          │
-                          ▼
-           ┌──────────────────────────────┐
-           │ Continuous Vercel CI/CD      │ ──> Auto-deploy on push to GitHub main
-           └──────────────────────────────┘
-```
+![The White-Box Architecture Blueprint](white_box_architecture.jpg)
 
 The AI **does NOT** calculate scores or trigger red flags. Those are computed by a rule-based engine with published, auditable formulas. The AI provides contextual analysis and interactive consultation based on pre-computed diagnostic data.
 
