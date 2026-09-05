@@ -97,31 +97,36 @@ Each dimension produces a score of 0-100. The final composite score is 0-100.
 | 40 – 59 | 🟠 **Needs Attention** | Significant vulnerabilities present |
 | 0 – 39 | 🔴 **Critical** | High immediate risk of distress or insolvency |
 
+> ⚠️ **Circuit Breaker Status Capping:**  
+> If **Red Flag P0 (Liquidity Danger)** is active, the overall health status is **capped at "Needs Attention"** (regardless of the numerical total score) and automatically prioritized for Week 1 intervention.
+
 ---
 
 ### Dimension 1: Financial Health ($S_{fin}$ — Weight 35%)
+*Employs a **Hybrid Input Model**: Quick categorical options by default, with an optional nominal mini-calculator for MSMEs with exact figures.*
 
 | Sub-Indicator | Weight | Options & Score | Basis |
 |---|---|---|---|
 | **Account Separation** | 25% | Separated = 100 · Mixed = 0 (**→ Red Flag P0**) | SAK EMKM; basic accounting hygiene; KUR prerequisite |
-| **Financial Record-Keeping** | 25% | Software/SaaS = 100 · Spreadsheet = 75 · Manual ledger = 40 · None = 0 | Financial transparency & auditability |
-| **Cash Runway** | 30% | ≥3 months = 100 · 1-2.9 months = 60 · <1 month = 20 (**→ Red Flag P0**) | `Available Cash ÷ Monthly OPEX` |
-| **Gross Profit Margin** | 20% | Healthy (≥30% F&B, ≥20% Retail) = 100 · Thin/unknown = 20 | Industry benchmarks (BPS, LPPI) |
+| **Financial Record-Keeping** | 25% | Software/SaaS = 100 · Spreadsheet = 75 · Manual ledger = 50 (Micro) / 35 (Small) · None = 0 | Financial transparency & auditability (scaled) |
+| **Cash Runway** | 30% | ≥3 months = 100 · 1-2.9 months = 60 · <1 month = 20 (**→ Red Flag P0**) *(Optional formula: Cash ÷ OPEX)* | Liquidity buffer & survival duration |
+| **Gross Profit Margin** | 20% | Healthy (≥35% F&B, ≥20% Retail, ≥40% Services) = 100 · Thin/Unknown = 20 *(Optional: (Price - COGS)/Price)* | Sector-calibrated profitability |
 
 ```
 S_fin = (Account × 0.25) + (Recording × 0.25) + (Runway × 0.30) + (GPM × 0.20)
 ```
 
 ### Dimension 2: Operations & Efficiency ($S_{ops}$ — Weight 25%)
+*Features **Sector-Adaptive Questions** for inventory vs. service capacity.*
 
 | Sub-Indicator | Weight | Options & Score | Basis |
 |---|---|---|---|
 | **SOP Documentation** | 35% | Written & consistently executed = 100 · Partial = 50 · None = 10 | Process standardization |
 | **Owner Dependency Index** | 35% | Can leave ≥1 month = 100 · Max 1 week = 50 · ≤2 days = 0 (**→ Red Flag P1**) | Business continuity & key-person risk |
-| **Inventory / Waste Control** | 30% | Regular stock opname = 100 · Purchase logs only = 40 · None = 0 | Supply chain loss prevention |
+| **Inventory / Capacity Control** | 30% | **F&B/Retail**: Regular stock opname = 100 · Nota only = 40 · None = 0<br>**Services**: Measured booking/capacity = 100 · Ad-hoc = 40 · Unmanaged = 0 | Sector-adaptive waste & man-hour control |
 
 ```
-S_ops = (SOP × 0.35) + (OwnerDep × 0.35) + (Inventory × 0.30)
+S_ops = (SOP × 0.35) + (OwnerDep × 0.35) + (Inventory_or_Capacity × 0.30)
 ```
 
 ### Dimension 3: Market & Customer ($S_{mkt}$ — Weight 20%)
@@ -137,11 +142,12 @@ S_mkt = (Concentration × 0.50) + (Channels × 0.25) + (Retention × 0.25)
 ```
 
 ### Dimension 4: Governance & Human Capital ($S_{gov}$ — Weight 20%)
+*Incorporates **PP No. 7/2021 Tiered Expectations** (Micro vs. Small enterprises).*
 
 | Sub-Indicator | Weight | Options & Score | Basis |
 |---|---|---|---|
-| **Business Licensing** | 50% | NIB + Sectoral Permit/Cert = 100 · NIB only = 60 · None = 10 | PP 7/2021; OSS compliance; formal finance access |
-| **HR & Compensation** | 50% | Clear roles + performance incentives = 100 · Fixed salary only = 50 | Human capital retention & alignment |
+| **Business Licensing** | 50% | NIB + Sectoral Permit/Cert = 100 · NIB only = 60 · None = 10 (**→ Red Flag P2** if >1 yr) | PP 7/2021; OSS-RBA compliance; formal credit |
+| **HR & Compensation** | 50% | **Micro (1-4 staff)**: Clear roles = 100 · Mixed roles = 50<br>**Small (≥5 staff)**: Roles + KPI incentives = 100 · Fixed salary = 60 · Chaotic = 20 | Tiered organizational maturity |
 
 ```
 S_gov = (Licensing × 0.50) + (HR × 0.50)
@@ -149,26 +155,29 @@ S_gov = (Licensing × 0.50) + (HR × 0.50)
 
 ---
 
-### Red Flag System (Rule-Based, Not AI)
+### Red Flag System (Rule-Based Circuit Breakers)
 
-Red flags are triggered **deterministically prior to LLM narrative generation**:
+Red flags are evaluated **deterministically prior to Gemini LLM narrative generation**:
 
-| Priority | Trigger Condition | Label | Diagnostic Impact |
-|---|---|---|---|
-| **P0** (Critical) | Mixed accounts **OR** Cash runway < 1 month | 🔴 Liquidity Danger | Severe risk of sudden insolvency |
-| **P1** (Bottleneck) | Owner dependency ≤ 2 working days | 🟠 Operational Bottleneck | Enterprise cannot scale beyond founder hours |
-| **P2** (Compliance) | Operating > 1 year without NIB | 🟡 Regulatory Risk | Ineligible for KUR loans, government procurement, or formal permits |
+| Priority | Trigger Condition | Label | Diagnostic Impact | Mandatory 30-Day Action |
+|---|---|---|---|---|
+| **P0** (Critical) | Mixed accounts **OR** Cash runway < 1 month | 🔴 Liquidity Danger | **Status capped at "Needs Attention"**; Emergency Red Flag alert rendered on dashboard | **Week 1 Priority**: Account separation & daily cash audit |
+| **P1** (Bottleneck) | Owner dependency ≤ 2 working days | 🟠 Operational Bottleneck | Key-person vulnerability; blocks scalability | **Week 2 Priority**: SOP for top 3 owner tasks & delegation |
+| **P2** (Compliance) | Operating > 1 year without NIB | 🟡 Regulatory Risk | Ineligible for KUR loans, government procurement, or export | **Week 3 Priority**: Free self-service OSS-RBA NIB registration |
 
 ---
 
-## 🤖 AI's Role (Strict Boundaries)
+## 🤖 AI's Role & Output Structure (Strict Boundaries)
 
 | ✅ AI Does | ❌ AI Does NOT |
 |---|---|
-| Explain *why* vulnerabilities exist in the user's specific context | Calculate scores or override formulas |
+| Explain *why* vulnerabilities exist based on user context | Calculate scores or override formulas |
 | Synthesize a customized 30-day Action Plan (Week 1–4) | Determine red flag triggers (rule-based) |
-| Map diagnostic findings to relevant regulations (PP 7/2021, OSS) | Reclassify business scale |
-| Power the **Interactive AI Chat Advisor** with full assessment context | Hallucinate metrics or make speculative assumptions |
+| Return a **Strict Structured JSON Schema** for interactive UI rendering | Reclassify business scale |
+| Map diagnostic findings to relevant regulations (PP 7/2021, OSS) | Hallucinate metrics or make speculative assumptions |
+| Power the **Interactive AI Chat Advisor** with full assessment context | Operate as an ungrounded black box |
+
+> 📄 For the complete questionnaire dictionary, mini-calculator math, and Gemini JSON schemas, refer to [NOTION_SPEC.md](NOTION_SPEC.md).
 
 ---
 
@@ -196,8 +205,10 @@ Red flags are triggered **deterministically prior to LLM narrative generation**:
 
 - [x] **Phase 0: Groundwork & Methodology**
   - Theory formulation (Adapted Balanced Scorecard + PP 7/2021)
+  - Full questionnaire dictionary & hybrid input specifications ([NOTION_SPEC.md](NOTION_SPEC.md))
+  - Red Flag circuit breaker logic with status capping
+  - Strict Gemini JSON Schema definition
   - GitHub repo & Notion methodology sync
-  - Alignment on white-box deterministic principles
 - [ ] **Phase 1: Early Vercel Deployment & Baseline Setup**
   - Clean Next.js project skeleton
   - Vercel CI/CD integration linked to GitHub `main`
