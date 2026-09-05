@@ -181,21 +181,12 @@ Red flags are evaluated **deterministically prior to Gemini LLM narrative genera
 
 ---
 
-## 👥 Team & Responsibilities
-
-| Contributor | Area of Responsibility |
-|---|---|
-| **Rayyan** | **UI/UX Design Mockups**, Visual Design System, typography, tokens, user flow layouts |
-| **Felix & AI Pair** | **Methodology & Architecture**, Deterministic Scoring Engine, Gemini API Integration, Context-Aware AI Chat, Frontend Implementation, Vercel CI/CD, Notion Tracker |
-
----
-
 ## 🚀 Deployment & CI/CD Strategy
 
 1. **Early Vercel Deployment**:
    - Vercel is linked directly to the GitHub repository from Day 1.
    - Every push to the `main` branch triggers an automated build and deployment preview.
-   - Allows immediate, continuous testing of logic and UI updates across team members.
+   - Allows immediate, continuous testing of logic and UI updates across stakeholders.
 2. **Future VPS Migration**:
    - Designed with clean decoupling to facilitate seamless migration to a dedicated VPS for production scaling.
 
@@ -218,7 +209,7 @@ Red flags are evaluated **deterministically prior to Gemini LLM narrative genera
   - P0/P1/P2 rule-based red flag detector
   - Comprehensive unit tests for all edge cases
 - [ ] **Phase 3: UI & Multi-Step Assessment Form**
-  - Integration of Rayyan's UI/UX design mockups
+  - Integration of high-fidelity UI/UX design mockups
   - State machine for progressive assessment input
   - Live client-side score preview
 - [ ] **Phase 4: Results Dashboard & Gemini AI Narrative**
@@ -240,7 +231,7 @@ Red flags are evaluated **deterministically prior to Gemini LLM narrative genera
 | Layer | Technology |
 |---|---|
 | **Frontend Framework** | Next.js (React) |
-| **Styling** | Vanilla CSS (Tailored Design System based on Rayyan's mockups) |
+| **Styling** | Vanilla CSS (Tailored Design System) |
 | **Scoring Engine** | Pure JavaScript / TypeScript (Deterministic, 100% testable) |
 | **AI Layer** | Google Gemini API (Narrative Generator + Context-Aware Chat) |
 | **Hosting & CI/CD** | Vercel (Initial & Staging) → Self-hosted VPS (Production target) |
